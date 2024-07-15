@@ -1,90 +1,102 @@
 import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import swalTemporizadoBad from '../helpers/mensajeError.js'
-import swalTemporizado from '../helpers/mensajeAlert.js'
-import { Alerta } from './Alerta.jsx';
-
+import Swal from 'sweetalert2';
+import axios from 'axios';
 
 export const Formulario = () => {
-
-    const [nombre, setNombre] = useState('')
-    const [edad, setEdad] = useState('')
-    const [iglesia, setIglesia] = useState('')
-    const [email, setEmail] = useState('')
-    const [telefono, setTelefono] = useState('')
-    const [instrumento, setInstrumento] = useState('') 
-    const [pago, setPago] = useState('') 
-    const [alerta, setAlerta] = useState('')
     
+    const [dataNombre, setDataNombre] = useState('')
+    const [dataEdad, setDataEdad] = useState('')
+    const [dataIglesia, setDataIglesia] = useState('')
+    const [dataEmail, setDataEmail] = useState('')
+    const [dataTelefono, setDataTelefono] = useState('')
+    const [dataInstrumento, setDataInstrumento] = useState('') 
+    const [file, setFile] = useState(null) 
 
-    const mostrarAlerta = alerta => {
-        setAlerta(alerta)
+    const [formData, setFormData] = useState({
+        nombre: '',
+        edad: '',
+        iglesia: '',
+        email: '',
+        telefono: '',
+        id_instrumento: '',
+        file: null
+    });
 
-        setTimeout(() => {
-            setAlerta({})
-        }, 4000)
-    }
-
+    formData.nombre = dataNombre, 
+    formData.edad = dataEdad,
+    formData.iglesia = dataIglesia,
+    formData.email = dataEmail,
+    formData.telefono = dataTelefono
+    formData.id_instrumento = parseInt(dataInstrumento)
+    
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
+    formData.file = file
+    
+    const validateForm = () => {
+        const { nombre, edad, iglesia, email, telefono, id_instrumento, file } = formData;
+        return nombre && edad && iglesia && email && telefono && id_instrumento && file;
+    };
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Validar que los campos no estén vacíos
-        // if (!nombre || !edad || !iglesia || !email || !telefono || !instrumento) {
-        //     mostrarAlerta({
-        //         msg: 'Todos los campos son obligatorios',
-        //         error: true
-        //     })
-        //     console.log('Todos los campos son obligatorios');
-        //     return;
-        // }
-        
-        const datos = { nombre, edad, iglesia, email, telefono, instrumento, pago };
-
-        console.log(pago);
-        
-        try {
-            // API Rest
-            // http://localhost:4002/api/register/client
-            const response = await fetch('http://localhost:4002', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-                body: JSON.stringify(datos)
-            });
-
-            if(!response.ok) {
-                swalTemporizadoBad('Error en la solicitud de registro.');
-            }
-
-            const responseData = await response.json();
-            
-            if(responseData === 'EL REGISTRO YA EXISTE') {
-                swalTemporizadoBad('El Correo ya Existe');
-            }
-
-            if(responseData.ok){
-                console.log(responseData.message);
-                setNombre('');
-                setEdad('');
-                setIglesia('');
-                setEmail('');
-                setTelefono('');
-                setInstrumento('');
-                swalTemporizado('Registro Exitoso! Gracias.');
-            }
-          
-    
-          // Puedes redirigir o realizar otras acciones después del registro exitoso
-        } catch (error) {
-          console.error('Error al enviar datos a la API:', error);
-          swalTemporizadoBad('Ocurrió un error al registrarte. Intenta con otro Correo.')
+        if (!validateForm()) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Todos los campos son obligatorios'
+          });
+          return;
         }
-    }
-
-    const { msg } = alerta
+    
+        const formDataToSend = new FormData();
+        for (const key in formData) {
+            console.log(formData);
+            formDataToSend.append(key, formData[key]);
+        }
+    
+        try {
+            const response = await axios.post('http://localhost:4002/api/register/client', formDataToSend, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            //   'Content-Type': 'application/json'
+                },
+            });
+            // console.log(response);
+          if (response.status === 200) {
+            setDataNombre('');
+            setDataEdad('');
+            setDataIglesia('');
+            setDataEmail('');
+            setDataTelefono('');
+            setDataInstrumento('');
+            setFile(null);
+            Swal.fire({
+              icon: 'success',
+              title: 'Registro Exitoso',
+              text: 'El registro se ha realizado correctamente',
+              timer: 3000,
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: response.data.message,
+              timer: 3000,
+            });
+          }
+        } catch (error) {
+            // console.log(error.response);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.response.data.message,
+            timer: 3000,
+          });
+        }
+    };
+    
 
   return (
     <div>
@@ -96,63 +108,63 @@ export const Formulario = () => {
             <div className="grid md:grid-cols-3 gap-3 grid-cols-1">
                 {/* <!-- Nombre --> */}
                 <div className="form-control md:col-span-2">
-                    <label htmlFor="nombre" className="text-white font-thin">Nombre Completo:</label>
+                    <label className="text-white font-thin">Nombre Completo:</label>
                     <input 
                         type="text" 
                         id="nombre" 
                         className="label-control" 
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
+                        value={dataNombre}
+                        onChange={(e) => setDataNombre(e.target.value)}
                         // required
                     />
                 </div>
                 {/* <!-- Edad --> */}
                 <div className="form-control">
-                    <label htmlFor="edad" className="text-white font-thin">Edad:</label>
+                    <label className="text-white font-thin">Edad:</label>
                     <input 
                         type="number" 
                         id="edad" 
                         className="label-control"
-                        value={edad}
-                        onChange={(e) => setEdad(e.target.value)}
+                        value={dataEdad} 
+                        onChange={(e) => setDataEdad(e.target.value)}
                         // required
                     />
                 </div>
             </div>
             {/* <!-- Iglesia --> */}
             <div className="form-control">
-                <label htmlFor="iglesia" className="text-white font-thin">Iglesia:</label>
+                <label className="text-white font-thin">Iglesia:</label>
                 <input 
                     type="text" 
                     id="iglesia" 
                     className="label-control" 
-                    value={iglesia}
-                    onChange={(e) => setIglesia(e.target.value)}
+                    value={dataIglesia} 
+                    onChange={(e) => setDataIglesia(e.target.value)}
                     // required
                 />
             </div>
             <div className="grid md:grid-cols-3 gap-3 grid-cols-1">
                 {/* <!-- Email --> */}
                 <div className="form-control md:col-span-2">
-                    <label htmlFor="email" className="text-white font-thin">Email:</label>
+                    <label className="text-white font-thin">Email:</label>
                     <input 
                         type="email" 
                         id="email" 
                         className="label-control" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={dataEmail} 
+                        onChange={(e) => setDataEmail(e.target.value)}
                         // required
                     />
                 </div>
                 {/* <!-- Télefono / WhatsApp --> */}
                 <div className="form-control">
-                    <label htmlFor="telefono" className="text-white font-thin">Télefono <span className='md:visible invisible'>/ WhatsApp:</span></label>
+                    <label className="text-white font-thin">Télefono <span className='md:visible invisible'>/ WhatsApp:</span></label>
                     <input
                         type="number" 
                         id="telefono" 
                         className="rounded-md p-2 md:relative"
-                        value={telefono}
-                        onChange={(e) => setTelefono(e.target.value)}
+                        value={dataTelefono} 
+                        onChange={(e) => setDataTelefono(e.target.value)}
                         // required
                     />
                 </div>
@@ -160,27 +172,27 @@ export const Formulario = () => {
             <div className="grid md:grid-cols-3 gap-3 grid-cols-1">
                 {/* <!-- Instrumento --> */}
                 <div className="form-control md:col-span-2">
-                    <label htmlFor="Instrumento" className="text-white font-thin">Instrumento:</label>
+                    <label className="text-white font-thin">Instrumento:</label>
                     <select 
                         name="instrumento" 
                         id="instrumento" 
                         className="label-control" 
-                        value={instrumento}
-                        onChange={(e) => setInstrumento(e.target.value)}
+                        value={dataInstrumento} 
+                        onChange={(e) => setDataInstrumento(e.target.value)}
                         // required
                     >
-                        <option value="">Seleccione...</option>
-                        <option value="Bajo">Bajo</option>
-                        <option value="Bateria">Bateria</option>
-                        <option value="Guitarra">Guitarra</option>
-                        <option value="Piano">Piano</option>
-                        <option value="Voz">Voz</option>
-                        <option value="Otro">Otro</option>
+                        <option value="">Selecciona un instrumento</option>
+                        <option value="1">Piano</option>
+                        <option value="2">Bajo</option>
+                        <option value="3">Guitarra</option>
+                        <option value="4">Voz</option>
+                        <option value="5">Batería</option>
+                        <option value="6">Otro</option>
                     </select>
                 </div>
                 {/* <!-- Comprobante de Pago --> */}
                 <div className="form-control w-full">
-                    <label htmlFor="pago" className="text-white font-thin">Comprobante de Pago:</label>
+                    <label className="text-white font-thin">Comprobante de Pago:</label>
                     <div className="flex items-center justify-center w-full">
                         <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-10 border-2 border-white border-dashed rounded-lg cursor-pointer bg-transparent ">
                             <div className="flex flex-col items-center justify-center pt-7 pb-6">
@@ -188,22 +200,21 @@ export const Formulario = () => {
                             </div>
                             <input 
                                 id="dropzone-file" 
-                                type="file" 
-                                className="hidden"
-                                value={instrumento}
-                                onChange={(e) => setInstrumento(e.target.value)} 
+                                type="file"
+                                accept="image/*"
+                                name="file"
+                                onChange={handleFileChange}
+                                // required
                             />
                         </label>
                     </div> 
                 </div>
             </div>
-
-            {msg && <Alerta alerta={alerta} />}
             
             {/* Boton */}
             <div className="flex items-center justify-center">
                 <button
-                    className="flex items-center justify-center bg-[#B9B5BF] p-3 rounded-lg w-1/2 text-center"
+                    className="flex text-white items-center justify-center bg-[#B9B5BF] hover:bg-[#9f9ca4] p-3 rounded-lg w-1/2 text-center"
                     type="submit"
                 >Registrarse</button>
             </div>
