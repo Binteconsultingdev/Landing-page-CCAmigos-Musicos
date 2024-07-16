@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { useDropzone } from "react-dropzone";
+import { useNavigate } from 'react-router-dom';
 
 export const Formulario = () => {
     
+    const navigate = useNavigate();
+
     const [dataNombre, setDataNombre] = useState('')
     const [dataEdad, setDataEdad] = useState('')
     const [dataIglesia, setDataIglesia] = useState('')
     const [dataEmail, setDataEmail] = useState('')
     const [dataTelefono, setDataTelefono] = useState('')
     const [dataInstrumento, setDataInstrumento] = useState('') 
-    const [file, setFile] = useState(null) 
+    const [datafile, setDataFile] = useState(null) 
+
+    const onDrop = useCallback((acceptedFiles) => {
+        setDataFile(acceptedFiles[0]);
+    }, []);
+    const { getRootProps, getInputProps, acceptedFiles } = useDropzone({ onDrop });
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -19,7 +28,7 @@ export const Formulario = () => {
         email: '',
         telefono: '',
         id_instrumento: '',
-        file: null
+        file: null,
     });
 
     formData.nombre = dataNombre, 
@@ -28,16 +37,20 @@ export const Formulario = () => {
     formData.email = dataEmail,
     formData.telefono = dataTelefono
     formData.id_instrumento = parseInt(dataInstrumento)
-    
+    formData.file = datafile
+
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
+        // console.log({formData});
     };
-    formData.file = file
-    
     const validateForm = () => {
-        const { nombre, edad, iglesia, email, telefono, id_instrumento, file } = formData;
-        return nombre && edad && iglesia && email && telefono && id_instrumento && file;
+        const { nombre, edad, iglesia, email, telefono, id_instrumento } = formData;
+        return nombre && edad && iglesia && email && telefono && id_instrumento ;
     };
+
+    const reloadPage = () => {
+        window.location.reload(true);
+    }
     
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -45,18 +58,21 @@ export const Formulario = () => {
           Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Todos los campos son obligatorios'
+            text: 'Todos los campos son obligatorios',
+            timer: 2000,
           });
           return;
         }
     
         const formDataToSend = new FormData();
         for (const key in formData) {
-            console.log(formData);
+            // console.log(formData);
             formDataToSend.append(key, formData[key]);
         }
     
         try {
+            // https://developer.binteapi.com:4003/api/register/client
+            // http://localhost:4002/api/register/client
             const response = await axios.post('http://localhost:4002/api/register/client', formDataToSend, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -76,8 +92,13 @@ export const Formulario = () => {
               icon: 'success',
               title: 'Registro Exitoso',
               text: 'El registro se ha realizado correctamente',
-              timer: 3000,
+              allowOutsideClick: false,
+              timer: 2000,
             });
+            setTimeout({
+                reloadPage
+            }, 3000)
+            reloadPage()
           } else {
             Swal.fire({
               icon: 'error',
@@ -115,7 +136,7 @@ export const Formulario = () => {
                         className="label-control" 
                         value={dataNombre}
                         onChange={(e) => setDataNombre(e.target.value)}
-                        // required
+                        required
                     />
                 </div>
                 {/* <!-- Edad --> */}
@@ -127,7 +148,7 @@ export const Formulario = () => {
                         className="label-control"
                         value={dataEdad} 
                         onChange={(e) => setDataEdad(e.target.value)}
-                        // required
+                        required
                     />
                 </div>
             </div>
@@ -140,7 +161,7 @@ export const Formulario = () => {
                     className="label-control" 
                     value={dataIglesia} 
                     onChange={(e) => setDataIglesia(e.target.value)}
-                    // required
+                    required
                 />
             </div>
             <div className="grid md:grid-cols-3 gap-3 grid-cols-1">
@@ -153,7 +174,7 @@ export const Formulario = () => {
                         className="label-control" 
                         value={dataEmail} 
                         onChange={(e) => setDataEmail(e.target.value)}
-                        // required
+                        required
                     />
                 </div>
                 {/* <!-- Télefono / WhatsApp --> */}
@@ -165,13 +186,13 @@ export const Formulario = () => {
                         className="rounded-md p-2 md:relative"
                         value={dataTelefono} 
                         onChange={(e) => setDataTelefono(e.target.value)}
-                        // required
+                        required
                     />
                 </div>
             </div>
-            <div className="grid md:grid-cols-3 gap-3 grid-cols-1">
+            <div className="">
                 {/* <!-- Instrumento --> */}
-                <div className="form-control md:col-span-2">
+                <div className="form-control">
                     <label className="text-white font-thin">Instrumento:</label>
                     <select 
                         name="instrumento" 
@@ -179,7 +200,7 @@ export const Formulario = () => {
                         className="label-control" 
                         value={dataInstrumento} 
                         onChange={(e) => setDataInstrumento(e.target.value)}
-                        // required
+                        required
                     >
                         <option value="">Selecciona un instrumento</option>
                         <option value="1">Piano</option>
@@ -191,7 +212,7 @@ export const Formulario = () => {
                     </select>
                 </div>
                 {/* <!-- Comprobante de Pago --> */}
-                <div className="form-control w-full">
+                {/*<div className="form-control w-full">
                     <label className="text-white font-thin">Comprobante de Pago:</label>
                     <div className="flex items-center justify-center w-full">
                         <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-10 border-2 border-white border-dashed rounded-lg cursor-pointer bg-transparent ">
@@ -204,13 +225,50 @@ export const Formulario = () => {
                                 accept="image/*"
                                 name="file"
                                 onChange={handleFileChange}
-                                // required
+                                required
                             />
+                            {formData.filePreview && (
+                                <div>
+                                    <img 
+                                        className='w-48 h-64 mt-5 rounded-md'
+                                        src={formData.filePreview} 
+                                        alt="Vista previa de la imagen"  
+                                    />
+                                </div>
+                            )}
                         </label>
                     </div> 
-                </div>
+                </div> */}
             </div>
-            
+            {/* Drag adn Drop zone */}
+            <div className="flex justify-center items-center w-full">
+                <div
+                    {...getRootProps()}
+                    className="flex items-center flex-col justify-center w-full"
+                >
+                    <label className="text-white text-left font-thin">Comprobante de Pago:</label>
+                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-10 border-2 border-white border-dashed rounded-lg cursor-pointer bg-transparent ">
+                        <input {...getInputProps()} 
+                            type="file"
+                            accept="image/*"
+                            name="file"
+                            onChange={handleFileChange}
+                        />
+                        {datafile ? (
+                            <p className="mb-2 text-sm text-white dark:text-gray-400">{datafile.name}</p>
+                        ) : (
+                            <p  className="mb-2 text-sm text-white dark:text-gray-400">Seleccionar Imagen</p>
+                        )}
+                    </label>
+                    <div>
+                        {acceptedFiles[0] && (
+                            <img src={URL.createObjectURL(acceptedFiles[0])} alt="" 
+                                className='w-48 h-64 mt-5 rounded-md'
+                            />
+                        )}
+                    </div>
+                </div>
+            </div> 
             {/* Boton */}
             <div className="flex items-center justify-center">
                 <button

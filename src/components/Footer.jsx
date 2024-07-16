@@ -15,7 +15,7 @@ export const Footer = () => {
                   className='text-center text-white'
                 >
                   Create By
-                  <img className='w-32 rounded-md' src='https://ccamigos.com.mx/congreso-musicos/assets/img/bcg.png'></img>
+                  <img className='w-32 rounded-md' src='https://ccamigos.com.mx/equiparte/assets/img/bcg.png'></img>
                 </a>
               </div>
             </div>
