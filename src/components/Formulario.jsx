@@ -2,11 +2,8 @@ import React, { useState, useCallback } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useDropzone } from "react-dropzone";
-import { useNavigate } from 'react-router-dom';
 
 export const Formulario = () => {
-    
-    const navigate = useNavigate();
 
     const [dataNombre, setDataNombre] = useState('')
     const [dataEdad, setDataEdad] = useState('')
@@ -14,7 +11,7 @@ export const Formulario = () => {
     const [dataEmail, setDataEmail] = useState('')
     const [dataTelefono, setDataTelefono] = useState('')
     const [dataInstrumento, setDataInstrumento] = useState('') 
-    const [datafile, setDataFile] = useState(null) 
+    const [datafile, setDataFile] = useState([]) 
 
     const onDrop = useCallback((acceptedFiles) => {
         setDataFile(acceptedFiles[0]);
@@ -31,6 +28,8 @@ export const Formulario = () => {
         file: null,
     });
 
+    // formData.nombre = dataNombre,
+    // formData.edad = dataEdad,
     formData.nombre = dataNombre, 
     formData.edad = dataEdad,
     formData.iglesia = dataIglesia,
@@ -38,20 +37,21 @@ export const Formulario = () => {
     formData.telefono = dataTelefono
     formData.id_instrumento = parseInt(dataInstrumento)
     formData.file = datafile
+    
+    // const handleFileChange = (e) => {
+    //     setFile(e.target.files[0]);
+    //     // console.log({formData});
+    // };
 
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
-        // console.log({formData});
-    };
     const validateForm = () => {
         const { nombre, edad, iglesia, email, telefono, id_instrumento } = formData;
         return nombre && edad && iglesia && email && telefono && id_instrumento ;
     };
 
-    const reloadPage = () => {
-        window.location.reload(true);
+    const handleDeteleArray = () => {
+        acceptedFiles.shift()
     }
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) {
@@ -63,7 +63,7 @@ export const Formulario = () => {
           });
           return;
         }
-    
+
         const formDataToSend = new FormData();
         for (const key in formData) {
             // console.log(formData);
@@ -73,7 +73,7 @@ export const Formulario = () => {
         try {
             // https://developer.binteapi.com:4003/api/register/client
             // http://localhost:4002/api/register/client
-            const response = await axios.post('http://localhost:4002/api/register/client', formDataToSend, {
+            const response = await axios.post('https://developer.binteapi.com:4003/api/register/client', formDataToSend, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             //   'Content-Type': 'application/json'
@@ -87,18 +87,18 @@ export const Formulario = () => {
             setDataEmail('');
             setDataTelefono('');
             setDataInstrumento('');
-            setFile(null);
+            setDataFile([])
+            handleDeteleArray()
             Swal.fire({
               icon: 'success',
               title: 'Registro Exitoso',
               text: 'El registro se ha realizado correctamente',
-              allowOutsideClick: false,
               timer: 2000,
             });
-            setTimeout({
-                reloadPage
-            }, 3000)
-            reloadPage()
+            // setTimeout({
+            //     reloadPage
+            // }, 3000)
+            // reloadPage()
           } else {
             Swal.fire({
               icon: 'error',
@@ -125,7 +125,7 @@ export const Formulario = () => {
             onSubmit={handleSubmit}
             className="mx-auto container m-5 md:pr-[10%] md:pl-[10%] pr-[5%] pl-[5%] space-y-2"
         >
-            <h2 className="text-3xl text-center font-extralight text-white">Registrate</h2>
+            <h2 className="text-3xl text-center text-white font-bold uppercase">Registrate</h2>
             <div className="grid md:grid-cols-3 gap-3 grid-cols-1">
                 {/* <!-- Nombre --> */}
                 <div className="form-control md:col-span-2">
@@ -133,7 +133,7 @@ export const Formulario = () => {
                     <input 
                         type="text" 
                         id="nombre" 
-                        className="label-control" 
+                        className="label-control uppercase" 
                         value={dataNombre}
                         onChange={(e) => setDataNombre(e.target.value)}
                         required
@@ -158,7 +158,7 @@ export const Formulario = () => {
                 <input 
                     type="text" 
                     id="iglesia" 
-                    className="label-control" 
+                    className="label-control uppercase" 
                     value={dataIglesia} 
                     onChange={(e) => setDataIglesia(e.target.value)}
                     required
@@ -202,13 +202,13 @@ export const Formulario = () => {
                         onChange={(e) => setDataInstrumento(e.target.value)}
                         required
                     >
-                        <option value="">Selecciona un instrumento</option>
-                        <option value="1">Piano</option>
-                        <option value="2">Bajo</option>
-                        <option value="3">Guitarra</option>
-                        <option value="4">Voz</option>
-                        <option value="5">Batería</option>
-                        <option value="6">Otro</option>
+                        <option value="">SELECCIONA UN INSTRUMENTO</option>
+                        <option value="1">PIANO</option>
+                        <option value="2">BAJO</option>
+                        <option value="3">GUITARRA</option>
+                        <option value="4">VOZ</option>
+                        <option value="5">BATERÍA</option>
+                        <option value="6">OTRO</option>
                     </select>
                 </div>
                 {/* <!-- Comprobante de Pago --> */}
@@ -244,35 +244,41 @@ export const Formulario = () => {
             <div className="flex justify-center items-center w-full">
                 <div
                     {...getRootProps()}
-                    className="flex items-center flex-col justify-center w-full"
+                    className="flex items-center flex-col justify-center w-full mt-5"
                 >
-                    <label className="text-white text-left font-thin">Comprobante de Pago:</label>
-                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-10 border-2 border-white border-dashed rounded-lg cursor-pointer bg-transparent ">
+                    <label className="text-white text-left font-thin uppercase">Comprobante de Pago:</label>
+                    <label htmlFor="dropzone-file" className="flex flex-col items-center mt-2 justify-center w-full h-10 border-2 border-white border-dashed rounded-lg cursor-pointer bg-transparent ">
                         <input {...getInputProps()} 
                             type="file"
                             accept="image/*"
                             name="file"
-                            onChange={handleFileChange}
+                            // onChange={handleRemoveFiles}
                         />
                         {datafile ? (
-                            <p className="mb-2 text-sm text-white dark:text-gray-400">{datafile.name}</p>
+                            <p className="uppercase mb-2 text-sm text-white dark:text-gray-400">{datafile.name}</p>
                         ) : (
-                            <p  className="mb-2 text-sm text-white dark:text-gray-400">Seleccionar Imagen</p>
+                            <p className="uppercase mb-2 text-sm text-white dark:text-gray-400">Seleccionar Imagen</p>
                         )}
                     </label>
-                    <div>
+                    {datafile && 
+                        <div>
+                            {acceptedFiles[0] &&  
+                                <img src={URL.createObjectURL(acceptedFiles[0])} alt="" 
+                                    className='w-48 h-64 mt-5 rounded-md'
+                                />
+                            }
+                        </div>
+                    }
+                    {/* <div>
                         {acceptedFiles[0] && (
-                            <img src={URL.createObjectURL(acceptedFiles[0])} alt="" 
-                                className='w-48 h-64 mt-5 rounded-md'
-                            />
                         )}
-                    </div>
+                    </div> */}
                 </div>
             </div> 
             {/* Boton */}
             <div className="flex items-center justify-center">
                 <button
-                    className="flex text-white items-center justify-center bg-[#B9B5BF] hover:bg-[#9f9ca4] p-3 rounded-lg w-1/2 text-center"
+                    className="mt-4 flex uppercase text-white items-center justify-center bg-[#B9B5BF] hover:bg-[#9f9ca4] p-3 rounded-lg w-1/2 text-center"
                     type="submit"
                 >Registrarse</button>
             </div>
