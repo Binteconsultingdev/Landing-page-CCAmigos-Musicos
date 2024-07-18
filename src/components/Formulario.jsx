@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useDropzone } from "react-dropzone";
+import { Evento } from './Evento';
 
 export const Formulario = () => {
 
@@ -11,11 +12,56 @@ export const Formulario = () => {
     const [dataEmail, setDataEmail] = useState('')
     const [dataTelefono, setDataTelefono] = useState('')
     const [dataInstrumento, setDataInstrumento] = useState('') 
+    const [dataEvento, setDataEvento] = useState(0) 
     const [datafile, setDataFile] = useState([]) 
+    const [cargando, setCargando] = useState(true)
+    const [options, setOptions] = useState([]);
+    const [uniqueEventDetails, setUniqueEventDetails] = useState([]);
 
+    useEffect(() => {
+        // Función para obtener los datos de la API
+        const fetchData = async () => {
+            try {
+  
+                const response = await axios.get('http://localhost:4002/api/event'); // Ajusta la URL según tu API
+                // console.log(response.data.data)
+                // Obtener solo los id_evento y fecha_evento del response
+                const eventDetails = response.data.data.map(item => ({
+                    id_evento: item.id_evento,
+                    fecha_evento: item.fecha_evento,
+                    nombre_evento: item.nombre_evento
+                }));
+                
+                // Crear un nuevo arreglo con valores únicos de id_evento y fecha_evento
+                const uniqueDetails = [];
+                const seen = new Set();
+
+                eventDetails.forEach(detail => {
+                    const identifier = `${detail.id_evento}-${detail.fecha_evento}`;
+                    if (!seen.has(identifier)) {
+                    seen.add(identifier);
+                    uniqueDetails.push(detail);
+                    }
+                });
+                // Actualizar el estado con los valores únicos
+                setUniqueEventDetails(uniqueDetails);
+                console.log(uniqueDetails);
+
+                setOptions(response.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        fetchData();
+    }, []);
+
+
+    // Setear el Archivo
     const onDrop = useCallback((acceptedFiles) => {
         setDataFile(acceptedFiles[0]);
     }, []);
+
+    // console.log(dataEvento);
     const { getRootProps, getInputProps, acceptedFiles } = useDropzone({ onDrop });
 
     const [formData, setFormData] = useState({
@@ -25,31 +71,28 @@ export const Formulario = () => {
         email: '',
         telefono: '',
         id_instrumento: '',
+        id_evento: Number,
         file: null,
     });
 
-    // formData.nombre = dataNombre,
-    // formData.edad = dataEdad,
+    // Asignar los valores del state
     formData.nombre = dataNombre, 
     formData.edad = dataEdad,
     formData.iglesia = dataIglesia,
     formData.email = dataEmail,
     formData.telefono = dataTelefono
     formData.id_instrumento = parseInt(dataInstrumento)
+    formData.id_evento =  parseInt(dataEvento)
     formData.file = datafile
     
-    // const handleFileChange = (e) => {
-    //     setFile(e.target.files[0]);
-    //     // console.log({formData});
-    // };
-
     const validateForm = () => {
-        const { nombre, edad, iglesia, email, telefono, id_instrumento } = formData;
-        return nombre && edad && iglesia && email && telefono && id_instrumento ;
+        const { nombre, edad, iglesia, email, telefono, id_instrumento, id_evento } = formData;
+        return nombre && edad && iglesia && email && telefono && id_instrumento, id_evento ;
     };
 
     const handleDeteleArray = () => {
         acceptedFiles.shift()
+        setCargando(true)
     }
 
     const handleSubmit = async (e) => {
@@ -69,52 +112,50 @@ export const Formulario = () => {
             // console.log(formData);
             formDataToSend.append(key, formData[key]);
         }
-    
+
         try {
+            setCargando(false)
             // https://developer.binteapi.com:4003/api/register/client
             // http://localhost:4002/api/register/client
-            const response = await axios.post('https://developer.binteapi.com:4003/api/register/client', formDataToSend, {
+            const response = await axios.post('http://localhost:4002/api/register/client', formDataToSend, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             //   'Content-Type': 'application/json'
                 },
             });
             // console.log(response);
-          if (response.status === 200) {
-            setDataNombre('');
-            setDataEdad('');
-            setDataIglesia('');
-            setDataEmail('');
-            setDataTelefono('');
-            setDataInstrumento('');
-            setDataFile([])
-            handleDeteleArray()
-            Swal.fire({
-              icon: 'success',
-              title: 'Registro Exitoso',
-              text: 'El registro se ha realizado correctamente',
-              timer: 2000,
-            });
-            // setTimeout({
-            //     reloadPage
-            // }, 3000)
-            // reloadPage()
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: response.data.message,
-              timer: 3000,
-            });
-          }
+            if (response.status === 200) {
+                setDataNombre('');
+                setDataEdad('');
+                setDataIglesia('');
+                setDataEmail('');
+                setDataTelefono('');
+                setDataInstrumento('');
+                setDataEvento(0);
+                setDataFile([])
+                handleDeteleArray()
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Registro Exitoso',
+                    text: 'El registro se ha realizado correctamente',
+                    timer: 2000,
+                });
+            } else {
+                Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: response.data.message,
+                timer: 3000,
+                });
+            }
         } catch (error) {
             // console.log(error.response);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: error.response.data.message,
-            timer: 3000,
-          });
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response.data.message,
+                timer: 3000,
+            });
         }
     };
     
@@ -211,34 +252,27 @@ export const Formulario = () => {
                         <option value="6">OTRO</option>
                     </select>
                 </div>
-                {/* <!-- Comprobante de Pago --> */}
-                {/*<div className="form-control w-full">
-                    <label className="text-white font-thin">Comprobante de Pago:</label>
-                    <div className="flex items-center justify-center w-full">
-                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-10 border-2 border-white border-dashed rounded-lg cursor-pointer bg-transparent ">
-                            <div className="flex flex-col items-center justify-center pt-7 pb-6">
-                                <p className="mb-2 text-sm text-white dark:text-gray-400">Seleccionar Imagen</p>
-                            </div>
-                            <input 
-                                id="dropzone-file" 
-                                type="file"
-                                accept="image/*"
-                                name="file"
-                                onChange={handleFileChange}
-                                required
-                            />
-                            {formData.filePreview && (
-                                <div>
-                                    <img 
-                                        className='w-48 h-64 mt-5 rounded-md'
-                                        src={formData.filePreview} 
-                                        alt="Vista previa de la imagen"  
-                                    />
-                                </div>
-                            )}
-                        </label>
-                    </div> 
-                </div> */}
+            </div>
+            <div>
+                {/* <!-- Evento --> */}
+                <div className="form-control">
+                    <label className="text-white font-thin">Evento:</label>
+                    <select 
+                        name="evento" 
+                        id="evento" 
+                        className="label-control" 
+                        value={dataEvento} 
+                        onChange={(e) => setDataEvento(e.target.value)}
+                        required
+                    >
+                        <option value="">Seleccione una opción</option>
+                        {uniqueEventDetails.map((option) => (
+                            <option key={option.id_evento} value={option.id_evento}>
+                                Evento: {option.nombre_evento} - Fecha: {option.fecha_evento}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
             {/* Drag adn Drop zone */}
             <div className="flex justify-center items-center w-full">
@@ -269,18 +303,21 @@ export const Formulario = () => {
                             }
                         </div>
                     }
-                    {/* <div>
-                        {acceptedFiles[0] && (
-                        )}
-                    </div> */}
                 </div>
             </div> 
             {/* Boton */}
             <div className="flex items-center justify-center">
-                <button
-                    className="mt-4 flex uppercase text-white items-center justify-center bg-[#B9B5BF] hover:bg-[#9f9ca4] p-3 rounded-lg w-1/2 text-center"
-                    type="submit"
-                >Registrarse</button>
+                {cargando ? (
+                    <button
+                        className="mt-4 flex uppercase text-white items-center justify-center bg-[#B9B5BF] hover:bg-[#9f9ca4] p-3 rounded-lg w-1/2 text-center"
+                        type="submit"
+                    >Registrarse</button>
+                ) : (
+                    <button
+                        className="mt-4 cursor-not-allowed flex uppercase opacity-20 text-white items-center justify-center bg-[#a9a9aa] p-3 rounded-lg w-1/2 text-center"
+                        disabled
+                    >Registrarse</button>
+                )}
             </div>
         </form>
     </div>
