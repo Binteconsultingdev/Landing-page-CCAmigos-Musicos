@@ -1,20 +1,36 @@
+import { useEffect, useState } from "react";
 import { InfoEvento } from "./InfoEvento"
 
-export const InfoLanding = () => {
+export const InfoLanding = (infoEvent) => {
+
+    const finalInfo = infoEvent.infoEvent
+    const [result, setResult] = useState([]);
+
+    useEffect(() => {
+        // Convertir input a una cadena
+        const stringInput = String(finalInfo);
+
+        // Dividir el string en partes usando el punto como delimitador
+        const parts = stringInput.split('.').filter(part => part.trim() !== '');
+
+        setResult(parts);
+    }, [finalInfo]);
+
+
   return (
     <div className="container mx-auto">
         <h2 className="text-3xl text-white text-center font-bold uppercase">Equiparte</h2>
 
         <div className="mr-12 ml-12 mt-5">
-            <p className="text-white mb-4 text-center uppercase">
-                Un llamado a todos los directores de alabanza, músicos, cantantes y creativos
-                que quieran crecer en habilidades y conocimiento mientras sirven a su iglesia
-                local.
-            </p>
-            <p className="text-white text-center uppercase">
-                Dos días de talleres, enseñanza y noche de adoración con nuestro invitado
-                especial Omar Rodríguez, talleres:
-            </p>
+        <div>
+            {
+                result.map((parrafo, index) => (
+                    <p key={index} className="text-white mb-4 text-center uppercase">
+                        {parrafo}
+                    </p>
+                ))
+            }
+        </div>
         </div>
 
         <div className="mr-12 ml-12 mt-10 mb-20">

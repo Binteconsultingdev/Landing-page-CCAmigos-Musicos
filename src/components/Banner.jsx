@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Formulario } from "./Formulario"
 
-export const Banner = () => {
+export const Banner = (baner) => {
+
   return (
     <>
         <div className="flex justify-center">
-            <img src="https://ccamigos.com.mx/equiparte/assets/img/banner-principal.jpeg" className="max-w-full h-auto rounded-lg"></img>
+            <img src={baner.baner} className="max-w-full h-auto rounded-lg" />
         </div>
     </>
   )

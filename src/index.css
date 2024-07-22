@@ -8,9 +8,9 @@
     background-size: contain;
     /* background-size: cover; */
  
-.Bg-color {
+/* .Bg-color {
     background: #372D37 
-}
+} */
 
 .form-control {
     @apply flex flex-col p-1 uppercase

@@ -15,46 +15,7 @@ export const Formulario = () => {
     const [dataEvento, setDataEvento] = useState(0) 
     const [datafile, setDataFile] = useState([]) 
     const [cargando, setCargando] = useState(true)
-    const [options, setOptions] = useState([]);
-    const [uniqueEventDetails, setUniqueEventDetails] = useState([]);
-
-    useEffect(() => {
-        // Función para obtener los datos de la API
-        const fetchData = async () => {
-            try {
-  
-                const response = await axios.get('http://localhost:4002/api/event'); // Ajusta la URL según tu API
-                // console.log(response.data.data)
-                // Obtener solo los id_evento y fecha_evento del response
-                const eventDetails = response.data.data.map(item => ({
-                    id_evento: item.id_evento,
-                    fecha_evento: item.fecha_evento,
-                    nombre_evento: item.nombre_evento
-                }));
-                
-                // Crear un nuevo arreglo con valores únicos de id_evento y fecha_evento
-                const uniqueDetails = [];
-                const seen = new Set();
-
-                eventDetails.forEach(detail => {
-                    const identifier = `${detail.id_evento}-${detail.fecha_evento}`;
-                    if (!seen.has(identifier)) {
-                    seen.add(identifier);
-                    uniqueDetails.push(detail);
-                    }
-                });
-                // Actualizar el estado con los valores únicos
-                setUniqueEventDetails(uniqueDetails);
-                console.log(uniqueDetails);
-
-                setOptions(response.data);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-        fetchData();
-    }, []);
-
+    
 
     // Setear el Archivo
     const onDrop = useCallback((acceptedFiles) => {
@@ -253,8 +214,8 @@ export const Formulario = () => {
                     </select>
                 </div>
             </div>
-            <div>
-                {/* <!-- Evento --> */}
+           {/* <div>
+                <!-- Evento --> 
                 <div className="form-control">
                     <label className="text-white font-thin">Evento:</label>
                     <select 
@@ -273,7 +234,7 @@ export const Formulario = () => {
                         ))}
                     </select>
                 </div>
-            </div>
+             </div>  */}
             {/* Drag adn Drop zone */}
             <div className="flex justify-center items-center w-full">
                 <div
