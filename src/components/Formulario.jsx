@@ -3,18 +3,19 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useDropzone } from "react-dropzone";
 
-export const Formulario = ({ campos, url_pagina_link, id }) => {
+export const Formulario = ({ campos, url_pagina_link, id}) => {
+
     const [dataNombre, setDataNombre] = useState('');
     const [dataEdad, setDataEdad] = useState('');
     const [dataIglesia, setDataIglesia] = useState('');
     const [dataEmail, setDataEmail] = useState('');
     const [dataTelefono, setDataTelefono] = useState('');
     const [dataInstrumento, setDataInstrumento] = useState(''); 
-    const [dataEvento, setDataEvento] = useState(0); 
     const [datafile, setDataFile] = useState([]); 
+    const [cargando, setCargando] = useState(true);
+    const [dataEvento, setDataEvento] = useState(0); 
     const [dataNombrePadre, setDataNombrePadre] = useState(''); 
     const [dataAlergias, setDataAlergias] = useState(''); 
-    const [cargando, setCargando] = useState(true);
 
     const [showName, setShowName] = useState(false);
     const [showEmail, setShowEmail] = useState(false);
@@ -67,6 +68,7 @@ export const Formulario = ({ campos, url_pagina_link, id }) => {
     formData.file = datafile;
     formData.id_evento_url = url_pagina_link;
     formData.id_evento = id;
+    formData.id_proyect = id;
 
     const validateForm = () => {
         const { nombre } = formData;
@@ -97,7 +99,7 @@ export const Formulario = ({ campos, url_pagina_link, id }) => {
 
         try {
             setCargando(false);
-            const response = await axios.post(import.meta.env.VITE_URL_LOCAL, formDataToSend, {
+            const response = await axios.post(import.meta.env.VITE_URL_SERVER, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

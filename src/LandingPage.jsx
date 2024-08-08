@@ -21,71 +21,79 @@ export const LandingPage = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-      // Función para obtener los datos de la API
-      const fetchData = async () => {
+    // Función para obtener los datos de la API
+    const fetchData = async () => {
+      try {
+        const response = await axios.post(import.meta.env.VITE_URL_SERVER_LANDING, data, {
+          headers: { 'Content-Type': 'application/json' },
+        });
         
-          try {
-            const response = await axios.post(import.meta.env.VITE_URL_LOCAL_LANDING, data, {
-              headers: { 'Content-Type': 'application/json' },
-            });
-            // console.log(response)
-            setInfoLanding(response.data.data);
-            setLoading(false)
-          } catch (error) {
-              console.error('Error fetching data:', error);
-          }
-      };
-      fetchData();
+        // Validar si la respuesta está vacía
+        if (!response.data.data || Object.keys(response.data.data).length === 0) {
+          setInfoLanding(null); // O puedes usar otro estado para controlar esta condición
+          setLoading(false);
+        } else {
+          setInfoLanding(response.data.data);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false); // Manejar el estado de carga en caso de error
+      }
+    };
+    fetchData();
   }, []);
+  
 
-  const { id, baner, informacion_evento, color, campos, url_pagina_link } = infoLanding
+
+  const { id, baner, informacion_evento, color, campos, url_pagina_link } = infoLanding || {};
+
   
   // Extraer el Texto
   const infoEvent = informacion_evento
   
-  // Cambiar el Color
+  // Cambiar el color de fondo del body
   useEffect(() => {
-    // Aplicar el color al body
-    document.body.style.backgroundColor = color;
-  }, [color]); // Volver a aplicar el color cada vez que cambie
+    if (color) {
+      document.body.style.backgroundColor = color;
+    }
+  }, [color]);
 
+  
   return (
     <>
-      {
-        loading ? (
-          <div>
-            <Loader />
+      {loading ? (
+        <div>
+          <Loader />
+        </div>
+      ) : infoLanding === null ? (
+        <div className="container mx-auto">
+          <p className="text-3xl text-center mt-24 font-bold uppercase text-cyan-900">La página no existe.</p>
+        </div>
+      ) : (
+        <div style={{ backgroundColor: color }} className="bg-custom">
+          <div className="p-4">
+            <Banner baner={baner} />
           </div>
-        ) :
-        (
-          <body className={`bg-[${color}]`}>
-            <div className="p-4">
-                <Banner 
-                  baner={baner}
-                />
-            </div>
-            
-            <div className="mt-24">
-                <InfoLanding 
-                  infoEvent={infoEvent}
-                />
-            </div>
-
-            <div className="mt-20">
-                <Formulario 
-                  id={id}
-                  url_pagina_link={url_pagina_link}
-                  campos={campos}
-                />
-            </div>
-
-            <div className="mt-20">
-              <Footer />
-            </div>
-          </body>
-        )
-      }
+  
+          <div className="mt-24">
+            <InfoLanding infoEvent={informacion_evento} />
+          </div>
+  
+          <div className="mt-20">
+            <Formulario 
+              id={id}
+              url_pagina_link={url_pagina_link} 
+              campos={campos} 
+            />
+          </div>
+  
+          <div className="mt-20">
+            <Footer />
+          </div>
+        </div>
+      )}
     </>
-    
-  )
+  );
+  
 }
