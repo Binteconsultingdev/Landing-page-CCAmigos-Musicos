@@ -57,6 +57,7 @@ export const Formulario = ({ campos, url_pagina_link, id}) => {
         file: null,
         id_evento_url: '',
         id_evento: Number,
+        id_proyect: Number
     });
 
     formData.nombre = dataNombre; 
@@ -72,7 +73,7 @@ export const Formulario = ({ campos, url_pagina_link, id}) => {
 
     const validateForm = () => {
         const { nombre } = formData;
-        return nombre;
+        return nombre.trim() !== '' && acceptedFiles.length > 0;
     };
 
     const handleDeteleArray = () => {
@@ -282,7 +283,7 @@ export const Formulario = ({ campos, url_pagina_link, id}) => {
                         <label className="text-white text-left font-thin uppercase">Comprobante de Pago:</label>
                         <label htmlFor="dropzone-file" className="flex flex-col items-center mt-2 justify-center w-full h-10 border-2 border-white border-dashed rounded-lg cursor-pointer bg-transparent ">
                             <input {...getInputProps()} 
-                                type="hidden"
+                                type="file"
                                 accept="image/*"
                                 name="file"
                             />
@@ -292,17 +293,15 @@ export const Formulario = ({ campos, url_pagina_link, id}) => {
                                 <p className="uppercase mb-2 text-sm text-white dark:text-gray-400">Seleccionar Imagen</p>
                             )}
                         </label>
-                        {!datafile && 
-                            <div>
-                                {acceptedFiles[0] &&  
-                                    <img src={URL.createObjectURL(acceptedFiles[0])} alt="" 
-                                        className='w-48 h-64 mt-5 rounded-md'
-                                    />
-                                }
-                            </div>
-                        }
+                        <div>
+                            {acceptedFiles[0] &&  
+                                <img src={URL.createObjectURL(acceptedFiles[0])} alt="" 
+                                    className='w-48 h-64 mt-5 rounded-md'
+                                />
+                            }
+                        </div>
                     </div>
-                </div> 
+                </div>  
                 {/* Boton */}
                 <div className="flex items-center justify-center">
                     {cargando ? (
