@@ -27,6 +27,8 @@ export const LandingPage = () => {
         const response = await axios.post(import.meta.env.VITE_URL_SERVER_LANDING, data, {
           headers: { 'Content-Type': 'application/json' },
         });
+
+        console.log(response.data);
         
         // Validar si la respuesta está vacía
         if (!response.data.data || Object.keys(response.data.data).length === 0) {
@@ -48,6 +50,7 @@ export const LandingPage = () => {
 
   const { id, baner, informacion_evento, color, campos, url_pagina_link } = infoLanding || {};
 
+  console.log(infoLanding);
   
   // Extraer el Texto
   const infoEvent = informacion_evento
