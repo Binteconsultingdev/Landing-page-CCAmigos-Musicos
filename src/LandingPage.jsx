@@ -28,7 +28,7 @@ export const LandingPage = () => {
           headers: { 'Content-Type': 'application/json' },
         });
 
-        console.log(response.data);
+        // console.log(response.data);
         
         // Validar si la respuesta está vacía
         if (!response.data.data || Object.keys(response.data.data).length === 0) {
@@ -50,7 +50,7 @@ export const LandingPage = () => {
 
   const { id, baner, informacion_evento, color, campos, url_pagina_link } = infoLanding || {};
 
-  console.log(infoLanding);
+  // console.log(infoLanding);
   
   // Extraer el Texto
   const infoEvent = informacion_evento
@@ -80,7 +80,7 @@ export const LandingPage = () => {
           </div>
   
           <div className="mt-24">
-            <InfoLanding infoEvent={informacion_evento} />
+            <InfoLanding infoLanding={infoLanding} />
           </div>
   
           <div className="mt-20">
