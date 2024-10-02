@@ -1,9 +1,9 @@
 # Redirigir todo el tráfico a index.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /equiparte/
+  RewriteBase /eventos/
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /equiparte/index.html [L]
+  RewriteRule . /eventos/index.html [L]
 </IfModule>

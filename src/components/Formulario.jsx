@@ -53,6 +53,8 @@ export const Formulario = ({ campos, url_pagina_link, id}) => {
         iglesia: '',
         email: '',
         telefono: '',
+        alergias: '',
+        nombrePadre: '',
         id_instrumento: '',
         file: null,
         id_evento_url: '',
@@ -65,6 +67,8 @@ export const Formulario = ({ campos, url_pagina_link, id}) => {
     formData.iglesia = dataIglesia;
     formData.email = dataEmail;
     formData.telefono = dataTelefono;
+    formData.alergias = dataAlergias;
+    formData.nombrePadre = dataNombrePadre;
     formData.id_instrumento = parseInt(dataInstrumento);
     formData.file = datafile;
     formData.id_evento_url = url_pagina_link;
@@ -111,6 +115,8 @@ export const Formulario = ({ campos, url_pagina_link, id}) => {
                 setDataIglesia('');
                 setDataEmail('');
                 setDataTelefono('');
+                setDataAlergias('');
+                setDataNombrePadre('');
                 setDataInstrumento('');
                 setDataEvento(0);
                 setDataFile([]);
@@ -186,6 +192,20 @@ export const Formulario = ({ campos, url_pagina_link, id}) => {
                             className="label-control" 
                             value={dataIglesia} 
                             onChange={(e) => setDataIglesia(e.target.value)}
+                            required
+                        />
+                    </div>
+                )}
+                {/* <!-- Alergias --> */}
+                {showAlergias && (
+                    <div className="form-control">
+                        <label className="text-white font-thin">Alergias:</label>
+                        <input 
+                            type="text" 
+                            id="alergias" 
+                            className="label-control" 
+                            value={dataAlergias} 
+                            onChange={(e) => setDataAlergias(e.target.value)}
                             required
                         />
                     </div>
