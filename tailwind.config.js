@@ -4,7 +4,11 @@ export default {
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'], // Define Poppins como la fuente principal
+      },
+    },
   },
   plugins: [],
 }
